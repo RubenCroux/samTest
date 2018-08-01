@@ -1,0 +1,71 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Hello World with SAM
+
+
+Resources:
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: Hello::handleRequest
+      Runtime: java8
+      CodeUri: helloWorld1.jar
+      MemorySize: 512
+      Policies: AWSLambdaBasicExecutionRole
+      Timeout: 20
+
+  HelloWorld2Function:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: Hello::handleRequest
+      Runtime: java8
+      CodeUri: helloWorld2.jar
+      MemorySize: 512
+      Policies: AWSLambdaBasicExecutionRole
+      Timeout: 20
+
+{
+  "StartAt": "FirstState",
+  "States": {
+    "FirstState": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:REGION:ACCOUNT_ID:function:FUNCTION_NAME",
+      "Next": "ChoiceState"
+    },
+    "ChoiceState": {
+      "Type" : "Choice",
+      "Choices": [
+        {
+          "Variable": "$.foo",
+          "NumericEquals": 0,
+          "Next": "FirstMatchState"
+        },
+        {
+          "Variable": "$.foo",
+          "NumericEquals": 1,
+          "Next": "SecondMatchState"
+        }
+      ],
+      "Default": "DefaultState"
+    },
+
+    "FirstMatchState": {
+      "Type" : "Task",
+      "Resource": "arn:aws:lambda:eu-west-1:ACCOUNT_ID:function:HelloWorldFunction",
+      "Next": "NextState"
+    },
+
+    "SecondMatchState": {
+      "Type" : "Task",
+      "Resource": "arn:aws:lambda:REGION:ACCOUNT_ID:function:HelloWorld2Function",
+      "Next": "NextState"
+    },
+
+    "DefaultState": {
+      "Type": "Fail",
+      "Error": "DefaultStateError",
+      "Cause": "No Matches!",
+      "End": true
+    }
+  }
+}
