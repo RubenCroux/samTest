@@ -1,15 +1,13 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Transform: AWS::Serverless-2016-10-31
 Description: Hello World with SAM
-
-
 Resources:
   HelloWorldFunction:
-    Type: AWS::Serverless::Function
     Properties:
+      CodeUri: s3://phc-poc-sam/a5e2fbb31897d12a2defcea5549ba282
       Handler: Hello::handleRequest
-      Runtime: java8
-      CodeUri: helloWorld1.jar
       MemorySize: 512
       Policies: AWSLambdaBasicExecutionRole
+      Runtime: java8
       Timeout: 20
+    Type: AWS::Serverless::Function
+Transform: AWS::Serverless-2016-10-31
