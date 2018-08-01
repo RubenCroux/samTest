@@ -1,0 +1,23 @@
+AWSTemplateFormatVersion:
+'2010-09-09'
+Transform: AWS::Serverless-
+2016
+-
+10
+-
+31
+Description: Hello World with SAM
+Resources:
+HelloWorldFunction:
+Type: AWS::Serverless::Function
+Properties:
+Handler: com.example.LambdaExample::handleRequest
+Runtime: java8
+CodeUri: LambdaExample-
+1.0
+-SNAPSHOT.jar
+MemorySize:
+512
+Policies: AWSLambdaBasicExecutionRole
+Timeout:
+20
