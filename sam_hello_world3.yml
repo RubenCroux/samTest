@@ -1,0 +1,76 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Hello World with SAM
+Resources:
+  CustomDomainStateMachine:
+    Properties:
+      DefinitionString:
+        Fn::Sub:
+        - "{\n  \"StartAt\": \"FirstState\",\n  \"States\": {\n    \"FirstState\"\
+          : {\n      \"Type\": \"Task\",\n      \"Resource\": \"arn:aws:lambda:REGION:ACCOUNT_ID:function:FUNCTION_NAME\"\
+          ,\n      \"Next\": \"ChoiceState\"\n    },\n    \"ChoiceState\": {\n   \
+          \   \"Type\" : \"Choice\",\n      \"Choices\": [\n        {\n          \"\
+          Variable\": \"$.foo\",\n          \"NumericEquals\": 0,\n          \"Next\"\
+          : \"FirstMatchState\"\n        },\n        {\n          \"Variable\": \"\
+          $.foo\",\n          \"NumericEquals\": 1,\n          \"Next\": \"SecondMatchState\"\
+          \n        }\n      ],\n      \"Default\": \"DefaultState\"\n    },\n\n \
+          \   \"FirstMatchState\": {\n      \"Type\" : \"Task\",\n      \"Resource\"\
+          : \"${HelloWorldFunctionArn}\",\n      \"Next\": \"NextState\"\n    },\n\
+          \n    \"SecondMatchState\": {\n      \"Type\" : \"Task\",\n      \"Resource\"\
+          : \"${HelloWorld2FunctionArn}\",\n      \"Next\": \"NextState\"\n    },\n\
+          \n    \"DefaultState\": {\n      \"Type\": \"Fail\",\n      \"Error\": \"\
+          DefaultStateError\",\n      \"Cause\": \"No Matches!\"\n    },\n    \n \
+          \   \"NextState\": {\n      \"End\": true\n    }\n  }\n}"
+        - HelloWorld2FunctionArn:
+            Fn::GetAtt:
+            - HelloWorld2Function
+            - Arn
+          HelloWorldFunctionArn:
+            Fn::GetAtt:
+            - HelloWorldFunction
+            - Arn
+      RoleArn:
+        Fn::GetAtt:
+        - StatesExecutionRole
+        - Arn
+      StateMachineName: CustomDomainStateMachine
+    Type: AWS::StepFunctions::StateMachine
+  HelloWorld2Function:
+    Properties:
+      CodeUri: s3://phc-poc-sam/0774f56be277511bb5f1705d8830a864
+      Handler: Hello::handleRequest
+      MemorySize: 512
+      Policies: AWSLambdaBasicExecutionRole
+      Runtime: java8
+      Timeout: 20
+    Type: AWS::Serverless::Function
+  HelloWorldFunction:
+    Properties:
+      CodeUri: s3://phc-poc-sam/a5e2fbb31897d12a2defcea5549ba282
+      Handler: Hello::handleRequest
+      MemorySize: 512
+      Policies: AWSLambdaBasicExecutionRole
+      Runtime: java8
+      Timeout: 20
+    Type: AWS::Serverless::Function
+  StatesExecutionRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - Fn::Sub: states.${AWS::Region}.amazonaws.com
+        Version: '2012-10-17'
+      Path: /
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - lambda:InvokeFunction
+            Effect: Allow
+            Resource: '*'
+          Version: '2012-10-17'
+        PolicyName: StatesExecutionPolicy
+    Type: AWS::IAM::Role
+Transform: AWS::Serverless-2016-10-31

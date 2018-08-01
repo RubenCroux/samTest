@@ -23,49 +23,84 @@ Resources:
       MemorySize: 512
       Policies: AWSLambdaBasicExecutionRole
       Timeout: 20
+#State machine role
+  StatesExecutionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - !Sub states.${AWS::Region}.amazonaws.com
+            Action: "sts:AssumeRole"
+      Path: "/"
+      Policies:
+        - PolicyName: StatesExecutionPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "lambda:InvokeFunction"
+                Resource: "*"
+#State machine definition
+  CustomDomainStateMachine:
+    Type: "AWS::StepFunctions::StateMachine"
+    Properties:
+      StateMachineName: CustomDomainStateMachine
+      RoleArn: !GetAtt [ StatesExecutionRole, Arn ]
+      DefinitionString:
+        !Sub
+          - |-
+            {
+              "StartAt": "FirstState",
+              "States": {
+                "FirstState": {
+                  "Type": "Task",
+                  "Resource": "arn:aws:lambda:REGION:ACCOUNT_ID:function:FUNCTION_NAME",
+                  "Next": "ChoiceState"
+                },
+                "ChoiceState": {
+                  "Type" : "Choice",
+                  "Choices": [
+                    {
+                      "Variable": "$.foo",
+                      "NumericEquals": 0,
+                      "Next": "FirstMatchState"
+                    },
+                    {
+                      "Variable": "$.foo",
+                      "NumericEquals": 1,
+                      "Next": "SecondMatchState"
+                    }
+                  ],
+                  "Default": "DefaultState"
+                },
 
-{
-  "StartAt": "FirstState",
-  "States": {
-    "FirstState": {
-      "Type": "Task",
-      "Resource": "arn:aws:lambda:REGION:ACCOUNT_ID:function:FUNCTION_NAME",
-      "Next": "ChoiceState"
-    },
-    "ChoiceState": {
-      "Type" : "Choice",
-      "Choices": [
-        {
-          "Variable": "$.foo",
-          "NumericEquals": 0,
-          "Next": "FirstMatchState"
-        },
-        {
-          "Variable": "$.foo",
-          "NumericEquals": 1,
-          "Next": "SecondMatchState"
-        }
-      ],
-      "Default": "DefaultState"
-    },
+                "FirstMatchState": {
+                  "Type" : "Task",
+                  "Resource": "${HelloWorldFunctionArn}",
+                  "Next": "NextState"
+                },
 
-    "FirstMatchState": {
-      "Type" : "Task",
-      "Resource": "arn:aws:lambda:eu-west-1:ACCOUNT_ID:function:HelloWorldFunction",
-      "Next": "NextState"
-    },
+                "SecondMatchState": {
+                  "Type" : "Task",
+                  "Resource": "${HelloWorld2FunctionArn}",
+                  "Next": "NextState"
+                },
 
-    "SecondMatchState": {
-      "Type" : "Task",
-      "Resource": "arn:aws:lambda:REGION:ACCOUNT_ID:function:HelloWorld2Function",
-      "Next": "NextState"
-    },
-
-    "DefaultState": {
-      "Type": "Fail",
-      "Error": "DefaultStateError",
-      "Cause": "No Matches!",
-      "End": true
-    }
-  }
-}
+                "DefaultState": {
+                  "Type": "Fail",
+                  "Error": "DefaultStateError",
+                  "Cause": "No Matches!"
+                },
+                
+                "NextState": {
+                  "End": true
+                }
+              }
+            }
+          - HelloWorldFunctionArn: !GetAtt [ HelloWorldFunction, Arn ]
+            HelloWorld2FunctionArn: !GetAtt [ HelloWorld2Function, Arn ]
