@@ -6,20 +6,20 @@ Resources:
       DefinitionString:
         Fn::Sub:
         - "{\n  \"StartAt\": \"FirstState\",\n  \"States\": {\n    \"FirstState\"\
-          : {\n      \"Type\": \"Task\",\n      \"Resource\": \"arn:aws:lambda:REGION:ACCOUNT_ID:function:FUNCTION_NAME\"\
+          : {\n      \"Type\": \"Task\",\n      \"Resource\": \"${RandomNumberFunctionArn}\"\
           ,\n      \"Next\": \"ChoiceState\"\n    },\n    \"ChoiceState\": {\n   \
           \   \"Type\" : \"Choice\",\n      \"Choices\": [\n        {\n          \"\
-          Variable\": \"$.foo\",\n          \"NumericEquals\": 0,\n          \"Next\"\
-          : \"FirstMatchState\"\n        },\n        {\n          \"Variable\": \"\
-          $.foo\",\n          \"NumericEquals\": 1,\n          \"Next\": \"SecondMatchState\"\
-          \n        }\n      ],\n      \"Default\": \"DefaultState\"\n    },\n\n \
-          \   \"FirstMatchState\": {\n      \"Type\" : \"Task\",\n      \"Resource\"\
-          : \"${HelloWorldFunctionArn}\",\n      \"Next\": \"NextState\"\n    },\n\
-          \n    \"SecondMatchState\": {\n      \"Type\" : \"Task\",\n      \"Resource\"\
-          : \"${HelloWorld2FunctionArn}\",\n      \"Next\": \"NextState\"\n    },\n\
-          \n    \"DefaultState\": {\n      \"Type\": \"Fail\",\n      \"Error\": \"\
-          DefaultStateError\",\n      \"Cause\": \"No Matches!\"\n    },\n    \n \
-          \   \"NextState\": {\n      \"End\": true\n    }\n  }\n}"
+          Variable\": \"$.value\",\n          \"NumericEquals\": 0,\n          \"\
+          Next\": \"FirstMatchState\"\n        },\n        {\n          \"Variable\"\
+          : \"$.value\",\n          \"NumericEquals\": 1,\n          \"Next\": \"\
+          SecondMatchState\"\n        }\n      ],\n      \"Default\": \"DefaultState\"\
+          \n    },\n\n    \"FirstMatchState\": {\n      \"Type\" : \"Task\",\n   \
+          \   \"Resource\": \"${HelloWorldFunctionArn}\",\n      \"Next\": \"NextState\"\
+          \n    },\n\n    \"SecondMatchState\": {\n      \"Type\" : \"Task\",\n  \
+          \    \"Resource\": \"${HelloWorld2FunctionArn}\",\n      \"Next\": \"NextState\"\
+          \n    },\n\n    \"DefaultState\": {\n      \"Type\": \"Fail\",\n      \"\
+          Error\": \"DefaultStateError\",\n      \"Cause\": \"No Matches!\"\n    },\n\
+          \n    \"NextState\": {\n      \"Type\": \"Succeed\"\n    }\n  }\n}"
         - HelloWorld2FunctionArn:
             Fn::GetAtt:
             - HelloWorld2Function
@@ -27,6 +27,10 @@ Resources:
           HelloWorldFunctionArn:
             Fn::GetAtt:
             - HelloWorldFunction
+            - Arn
+          RandomNumberFunctionArn:
+            Fn::GetAtt:
+            - RandomNumberFunction
             - Arn
       RoleArn:
         Fn::GetAtt:
@@ -47,6 +51,15 @@ Resources:
     Properties:
       CodeUri: s3://phc-poc-sam/a5e2fbb31897d12a2defcea5549ba282
       Handler: Hello::handleRequest
+      MemorySize: 512
+      Policies: AWSLambdaBasicExecutionRole
+      Runtime: java8
+      Timeout: 20
+    Type: AWS::Serverless::Function
+  RandomNumberFunction:
+    Properties:
+      CodeUri: s3://phc-poc-sam/f56f6723b0ed096b3f5d92b217cddbd3
+      Handler: RandomNumber::handleRequest
       MemorySize: 512
       Policies: AWSLambdaBasicExecutionRole
       Runtime: java8

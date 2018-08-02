@@ -23,6 +23,16 @@ Resources:
       MemorySize: 512
       Policies: AWSLambdaBasicExecutionRole
       Timeout: 20
+
+  RandomNumberFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: RandomNumber::handleRequest
+      Runtime: java8
+      CodeUri: RandomNumber.jar
+      MemorySize: 512
+      Policies: AWSLambdaBasicExecutionRole
+      Timeout: 20
 #State machine role
   StatesExecutionRole:
     Type: "AWS::IAM::Role"
@@ -59,19 +69,19 @@ Resources:
               "States": {
                 "FirstState": {
                   "Type": "Task",
-                  "Resource": "arn:aws:lambda:REGION:ACCOUNT_ID:function:FUNCTION_NAME",
+                  "Resource": "${RandomNumberFunctionArn}",
                   "Next": "ChoiceState"
                 },
                 "ChoiceState": {
                   "Type" : "Choice",
                   "Choices": [
                     {
-                      "Variable": "$.foo",
+                      "Variable": "$.value",
                       "NumericEquals": 0,
                       "Next": "FirstMatchState"
                     },
                     {
-                      "Variable": "$.foo",
+                      "Variable": "$.value",
                       "NumericEquals": 1,
                       "Next": "SecondMatchState"
                     }
@@ -96,11 +106,12 @@ Resources:
                   "Error": "DefaultStateError",
                   "Cause": "No Matches!"
                 },
-                
+
                 "NextState": {
-                  "End": true
+                  "Type": "Succeed"
                 }
               }
             }
           - HelloWorldFunctionArn: !GetAtt [ HelloWorldFunction, Arn ]
             HelloWorld2FunctionArn: !GetAtt [ HelloWorld2Function, Arn ]
+            RandomNumberFunctionArn: !GetAtt [ RandomNumberFunction, Arn ]
