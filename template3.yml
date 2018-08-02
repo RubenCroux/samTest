@@ -70,18 +70,19 @@ Resources:
                 "FirstState": {
                   "Type": "Task",
                   "Resource": "${RandomNumberFunctionArn}",
+                  "ResultPath": "$.value",
                   "Next": "ChoiceState"
                 },
                 "ChoiceState": {
                   "Type" : "Choice",
                   "Choices": [
                     {
-                      "Variable": "$.foo",
+                      "Variable": "$.value",
                       "NumericEquals": 0,
                       "Next": "FirstMatchState"
                     },
                     {
-                      "Variable": "$.foo",
+                      "Variable": "$.value",
                       "NumericEquals": 1,
                       "Next": "SecondMatchState"
                     }
