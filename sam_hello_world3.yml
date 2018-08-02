@@ -9,17 +9,17 @@ Resources:
           : {\n      \"Type\": \"Task\",\n      \"Resource\": \"${RandomNumberFunctionArn}\"\
           ,\n      \"Next\": \"ChoiceState\"\n    },\n    \"ChoiceState\": {\n   \
           \   \"Type\" : \"Choice\",\n      \"Choices\": [\n        {\n          \"\
-          Variable\": \"$.value\",\n          \"NumericEquals\": 0,\n          \"\
-          Next\": \"FirstMatchState\"\n        },\n        {\n          \"Variable\"\
-          : \"$.value\",\n          \"NumericEquals\": 1,\n          \"Next\": \"\
-          SecondMatchState\"\n        }\n      ],\n      \"Default\": \"DefaultState\"\
-          \n    },\n\n    \"FirstMatchState\": {\n      \"Type\" : \"Task\",\n   \
-          \   \"Resource\": \"${HelloWorldFunctionArn}\",\n      \"Next\": \"NextState\"\
-          \n    },\n\n    \"SecondMatchState\": {\n      \"Type\" : \"Task\",\n  \
-          \    \"Resource\": \"${HelloWorld2FunctionArn}\",\n      \"Next\": \"NextState\"\
-          \n    },\n\n    \"DefaultState\": {\n      \"Type\": \"Fail\",\n      \"\
-          Error\": \"DefaultStateError\",\n      \"Cause\": \"No Matches!\"\n    },\n\
-          \n    \"NextState\": {\n      \"Type\": \"Succeed\"\n    }\n  }\n}"
+          Variable\": \"$.foo\",\n          \"NumericEquals\": 0,\n          \"Next\"\
+          : \"FirstMatchState\"\n        },\n        {\n          \"Variable\": \"\
+          $.foo\",\n          \"NumericEquals\": 1,\n          \"Next\": \"SecondMatchState\"\
+          \n        }\n      ],\n      \"Default\": \"DefaultState\"\n    },\n\n \
+          \   \"FirstMatchState\": {\n      \"Type\" : \"Task\",\n      \"Resource\"\
+          : \"${HelloWorldFunctionArn}\",\n      \"Next\": \"NextState\"\n    },\n\
+          \n    \"SecondMatchState\": {\n      \"Type\" : \"Task\",\n      \"Resource\"\
+          : \"${HelloWorld2FunctionArn}\",\n      \"Next\": \"NextState\"\n    },\n\
+          \n    \"DefaultState\": {\n      \"Type\": \"Fail\",\n      \"Error\": \"\
+          DefaultStateError\",\n      \"Cause\": \"No Matches!\"\n    },\n\n    \"\
+          NextState\": {\n      \"Type\": \"Succeed\"\n    }\n  }\n}"
         - HelloWorld2FunctionArn:
             Fn::GetAtt:
             - HelloWorld2Function
@@ -58,7 +58,7 @@ Resources:
     Type: AWS::Serverless::Function
   RandomNumberFunction:
     Properties:
-      CodeUri: s3://phc-poc-sam/f56f6723b0ed096b3f5d92b217cddbd3
+      CodeUri: s3://phc-poc-sam/9cc85c86b2d3dddf8ad8d36b21184988
       Handler: RandomNumber::handleRequest
       MemorySize: 512
       Policies: AWSLambdaBasicExecutionRole

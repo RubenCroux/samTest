@@ -76,12 +76,12 @@ Resources:
                   "Type" : "Choice",
                   "Choices": [
                     {
-                      "Variable": "$.value",
+                      "Variable": "$.foo",
                       "NumericEquals": 0,
                       "Next": "FirstMatchState"
                     },
                     {
-                      "Variable": "$.value",
+                      "Variable": "$.foo",
                       "NumericEquals": 1,
                       "Next": "SecondMatchState"
                     }
